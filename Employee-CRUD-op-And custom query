@@ -1,0 +1,550 @@
+------problem stmt--------
+NOTE : all search should not be case sensitive 
+--> Empployee 
+empId
+name
+dept
+city
+qualification  ugs /grads/post grads 
+gender
+rating 
+
+
+------------------> crud on employee , post , put , delete , get all ,get by id 
+
+
+--> find all empls by dept
+
+->  find all empls by dept  and city
+
+
+->  find all empls having rating > 4
+
+->  find all empls having rating > 4 and are post grads 
+
+->  find all empls who r under grads 
+
+
+->  find all empls having rating > 4 and city
+
+->  find all empls having rating < 3 in IT dept 
+
+->  find all empls having rating < 3 
+
+->  find all empls having rating < 3  and dept 
+
+==========================================================================================solution============
+----Employee Model cls-----------
+package com.example.EmployeeSystem.model;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
+public class Employee {
+	
+@Id
+ private int empId;
+private String name;
+private String dept;
+private String city;
+private String qualification ; //ugs grads/post grads 
+ private char gender;  //f,m
+private int rating;
+
+public Employee() {
+	// TODO Auto-generated constructor stub
+}
+
+public Employee(int empId, String name, String dept, String city, String qualification, char gender, int rating) {
+	super();
+	this.empId = empId;
+	this.name = name;
+	this.dept = dept;
+	this.city = city;
+	this.qualification = qualification;
+	this.gender = gender;
+	this.rating = rating;
+}
+
+public int getEmpId() {
+	return empId;
+}
+
+public void setEmpId(int empId) {
+	this.empId = empId;
+}
+
+public String getName() {
+	return name;
+}
+
+public void setName(String name) {
+	this.name = name;
+}
+
+public String getDept() {
+	return dept;
+}
+
+public void setDept(String dept) {
+	this.dept = dept;
+}
+
+public String getCity() {
+	return city;
+}
+
+public void setCity(String city) {
+	this.city = city;
+}
+
+public String getQualification() {
+	return qualification;
+}
+
+public void setQualification(String qualification) {
+	this.qualification = qualification;
+}
+
+public char getGender() {
+	return gender;
+}
+
+public void setGender(char gender) {
+	this.gender = gender;
+}
+
+public int getRating() {
+	return rating;
+}
+
+public void setRating(int rating) {
+	this.rating = rating;
+}
+
+@Override
+public String toString() {
+	return "Employee [empId=" + empId + ", name=" + name + ", dept=" + dept + ", city=" + city + ", qualification="
+			+ qualification + ", gender=" + gender + ", rating=" + rating + "]";
+}
+
+
+
+
+}
+--------------------------------------------------Employeee Dao----
+
+
+package com.example.EmployeeSystem.DAO;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.example.EmployeeSystem.model.Employee;
+
+@Repository
+public interface EmployeeDAO extends CrudRepository<Employee, Integer> {
+
+//	get employee details by using name
+	public List<Employee> findByname(String name);
+	
+//	get employee details by using dept
+	public List<Employee> findBydept(String name);
+		
+	public List<Employee> findByDeptAndCity(String dept,String city);	
+	
+	public List<Employee> findByqualification(String qualification);
+	
+	@Query("select e from Employee e where e.rating>4")
+	public List<Employee> findByRating(int rating);
+	
+	@Query("select e from Employee e where e.rating>4 AND e.qualification=('pg')")
+	public List<Employee> findByRatingAndQualification(int rating, String qualification);
+	
+	@Query("select e from Employee e where e.rating>4 AND e.city=:city")
+	public List<Employee> findByRatingAndCity(@Param("city") String city);
+	
+	@Query("select e from Employee e where e.rating<3 AND e.dept=('IT')")
+	public List<Employee> findByRatingAndDept();
+	
+	@Query("select e from Employee e where e.rating<3")
+	public List<Employee> findByRatingLesser();
+	
+	@Query("select e from Employee e where e.rating<3 AND e.dept=:dept")
+	public List<Employee> findByRatingAndUserdept(@Param("dept") String dept);
+	
+}
+
+
+------------------------------------------Employee Services
+
+
+----------------------------services cls----
+package com.example.EmployeeSystem.services;
+
+import java.util.List;
+
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Service;
+
+import com.example.EmployeeSystem.model.Employee;
+
+@Service
+public interface EmployeeService {
+	
+	public Employee SaveEmp(Employee emp);
+	
+	public List<Employee> getAllEmployees();
+	
+	public Employee updateEmp(Employee emp);
+	
+	public Employee getId(int Empid);
+	
+	public String deleteEmp(int empid);
+	
+//	get employee details by using name
+	public List<Employee> getEmployeeByName(String name);
+	
+//	get employee details by using name
+	public List<Employee> getEmployeeByDept(String name);
+		
+	public List<Employee> getBydeptAndcity(String dept,String city);
+	
+	public List<Employee> getEmployeeByqualification(String qualification);
+	
+	public List<Employee> getEmployeeByrating();
+	
+	public List<Employee> getEmployeeByRatingAndQualification();
+	
+	public List<Employee> getEmployeeByRatingAndCity(String city);
+	
+	public List<Employee> getEmployeeByRatingAndDept();
+	
+	public List<Employee> getEmployeeByByRatingLesser();
+	
+	public List<Employee> getEmployeeByRatingAndUserdept(String dept);
+}
+
+
+------------------------Service Implentation----
+
+package com.example.EmployeeSystem.services;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.EmployeeSystem.DAO.EmployeeDAO;
+import com.example.EmployeeSystem.model.Employee;
+
+
+@Service
+public class EmployeeserviceImp implements EmployeeService{
+	
+	@Autowired
+	EmployeeDAO empDao;
+	
+	@Override
+	public Employee SaveEmp(Employee emp) {
+		String name=nameGenerator(emp.getName());
+		emp.setName(name);
+		return empDao.save(emp);
+	}
+	private String nameGenerator(String name) {
+		
+		return name.toUpperCase();
+	}
+
+
+	@Override
+	public List<Employee> getAllEmployees() {
+		
+		return (List<Employee>) empDao.findAll();
+	}
+	
+	@Override
+	public Employee updateEmp(Employee emp) {
+		
+		return empDao.save(emp);
+	}
+	
+	@Override
+	public Employee getId(int Empid) {
+		Optional<Employee> empOpt=empDao.findById(Empid);
+		if(empOpt.isPresent())
+			return empOpt.get();				
+		return null;
+	}
+	
+	
+	@Override
+	public String deleteEmp(int empid) {
+		
+		Employee emp=getId(empid);
+		if(emp!=null) {
+			empDao.delete(emp);
+			return "Emp deleted";
+		}
+		return "can't be deleted";
+	}
+	
+//	get employee details by using name
+	@Override
+	public List<Employee> getEmployeeByName(String name) {
+		
+		return empDao.findByname(name);
+	}
+	
+//	get employee details by using dept
+	@Override
+	public List<Employee> getEmployeeByDept(String name) {
+	
+		return empDao.findBydept(name);
+	}
+	
+	@Override
+	public List<Employee> getBydeptAndcity(String dept, String city) {
+		
+		return empDao.findByDeptAndCity(dept, city);
+	}
+	
+	@Override
+	public List<Employee> getEmployeeByqualification(String qualification) {
+		
+		return empDao.findByqualification(qualification);
+	}
+	@Override
+	public List<Employee> getEmployeeByrating() {
+		
+		return empDao.findByRating(0);
+	}
+	@Override
+	public List<Employee> getEmployeeByRatingAndQualification() {
+		
+		return empDao.findByRatingAndQualification(0, null);
+	}
+	@Override
+	public List<Employee> getEmployeeByRatingAndCity(String city) {
+		
+		return empDao.findByRatingAndCity(city);
+	}
+	@Override
+	public List<Employee> getEmployeeByRatingAndDept() {
+
+		return empDao.findByRatingAndDept();
+	}
+	@Override
+	public List<Employee> getEmployeeByByRatingLesser() {
+		
+		return empDao.findByRatingLesser();
+	}
+	@Override
+	public List<Employee> getEmployeeByRatingAndUserdept(String dept) {
+		
+		return empDao.findByRatingAndUserdept(dept);
+	}
+
+	
+	
+
+}
+------------------------------------------------Employeee ctrl
+
+package com.example.EmployeeSystem.Ctrl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.EmployeeSystem.model.Employee;
+import com.example.EmployeeSystem.services.EmployeeService;
+
+@RestController
+@RequestMapping("Employees")
+public class EmployeeCrtl {
+	
+	@Autowired
+	EmployeeService employeeService;
+	
+	@PostMapping()
+	public ResponseEntity<Employee> postData(@RequestBody Employee emp1){
+		Employee employee=employeeService.SaveEmp(emp1);
+		return new ResponseEntity<Employee>(employee,HttpStatus.CREATED);
+	}
+	
+	@GetMapping()
+	public ResponseEntity<List<Employee>> getemps(){	
+		List<Employee> emp= employeeService.getAllEmployees();
+		return new ResponseEntity<List<Employee>>(emp,HttpStatus.FOUND);
+	}
+	
+	@GetMapping("{empid}")
+	public ResponseEntity<Employee> getemp(@PathVariable int empid){	
+		Employee emp= employeeService.getId(empid);
+		return new ResponseEntity<Employee>(emp,HttpStatus.FOUND);
+	}
+	
+	@PutMapping
+	public ResponseEntity<Employee> updateemp(@RequestBody Employee emp){
+		Employee employee= employeeService.updateEmp(emp);
+		return new ResponseEntity<Employee>(employee,HttpStatus.CREATED);
+	}
+	
+	@DeleteMapping("{empid}")
+	public ResponseEntity<String> delEmp(@PathVariable int empid){
+	String res= employeeService.deleteEmp(empid);
+		return new ResponseEntity<String>(res,HttpStatus.OK);
+	}
+	
+//	get employee details by using name
+	@GetMapping("name/{name}")
+	public ResponseEntity<Object> getEmp(@PathVariable String name)
+	{
+		
+	List<Employee> employees=employeeService.getEmployeeByName(name);
+		
+			if(employees.size()!=0)
+		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
+		
+			else
+				return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
+		
+	}
+	
+//	get employee details by using name
+	@GetMapping("dept/{name}")
+	public ResponseEntity<Object> getDept(@PathVariable String name)
+	{
+		
+	List<Employee> employees=employeeService.getEmployeeByDept(name);
+		
+			if(employees.size()!=0)
+		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
+		
+			else
+				return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
+		
+	}
+//
+	@GetMapping("dept/{name}/city/{city}")
+	public ResponseEntity<Object> getDeptandcity(@PathVariable String name,@PathVariable String city)
+	{
+		
+	List<Employee> employees=employeeService.getBydeptAndcity(name,city);
+		
+			if(employees!=null)
+		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
+		
+			else
+				return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
+		
+	}
+	@GetMapping("qualification/{name}")
+	public ResponseEntity<Object> getqualification(@PathVariable String name)
+	{
+		
+	List<Employee> employees=employeeService.getEmployeeByqualification(name);
+		
+	if(employees.size()!=0)
+		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
+	else
+		return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
+		
+	}
+	
+	@GetMapping("rating")
+	public ResponseEntity<Object> getrating()
+	{
+		
+	List<Employee> employees=employeeService.getEmployeeByrating();
+
+	if(employees.size()!=0)
+		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
+	else
+		return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
+		
+	}
+	@GetMapping("raq")
+	public ResponseEntity<Object> getratingandqualification()
+	{
+		
+	List<Employee> employees=employeeService.getEmployeeByRatingAndQualification();
+
+	if(employees.size()!=0)
+		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
+	else
+		return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
+		
+	}
+	
+	@GetMapping("rac/{city}")
+	public ResponseEntity<Object> getratingandcity(@PathVariable String city)
+	{
+		
+	List<Employee> employees=employeeService.getEmployeeByRatingAndCity(city);
+
+	if(employees.size()!=0)
+		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
+	else
+		return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
+		
+	}
+	
+	@GetMapping("rad")
+	public ResponseEntity<Object> getratinganddept()
+	{
+		
+	List<Employee> employees=employeeService.getEmployeeByRatingAndDept();
+
+	if(employees.size()!=0)
+		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
+	else
+		return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
+		
+	}
+	
+	@GetMapping("rateless")
+	public ResponseEntity<Object> getratinglesser()
+	{
+		
+	List<Employee> employees=employeeService.getEmployeeByByRatingLesser();
+
+	if(employees.size()!=0)
+		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
+	else
+		return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
+		
+	}
+	@GetMapping("ratedept/{dept}")
+	public ResponseEntity<Object> getratinganduserdept(@PathVariable String dept)
+	{
+		
+	List<Employee> employees=employeeService.getEmployeeByRatingAndUserdept(dept);
+
+	if(employees.size()!=0)
+		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
+	else
+		return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
+		
+	}
+			
+	
+}
+---------------------------------------------------------
