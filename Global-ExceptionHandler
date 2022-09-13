@@ -1,3 +1,16 @@
+
+
+
+
+--> create an exception for UserNotFound
+
+--> Throw the exception during delete 
+---> and handle it 
+
+
+
+
+
 ------------model
 package com.example.EmployeeSystem.model;
 
