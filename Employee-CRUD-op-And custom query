@@ -475,7 +475,7 @@ public class EmployeeCrtl {
 		
 	List<Employee> employees=employeeService.getEmployeeByrating();
 
-	if(employees.size()!=0)
+	if(employees!=null)
 		return new ResponseEntity<Object>(employees,HttpStatus.FOUND);
 	else
 		return new ResponseEntity<Object>("Data Not FOund",HttpStatus.NOT_FOUND);		
